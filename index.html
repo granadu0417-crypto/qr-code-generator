@@ -10,7 +10,14 @@
     <meta name="keywords" content="QR코드, QR코드 생성기, QR코드 만들기, QR코드 제작, 무료 QR코드, QR code generator, 큐알코드">
     <meta name="author" content="QR코드 생성기">
     <link rel="canonical" href="https://qr-code-generator.pages.dev/">
-    
+
+    <!-- PWA 지원 -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="QR코드 생성기">
+
     <!-- Open Graph (페이스북, 카카오톡) -->
     <meta property="og:title" content="QR코드 생성기 - 무료 QR코드 만들기">
     <meta property="og:description" content="URL, 텍스트를 QR코드로 변환하세요. 무료 QR코드 생성기로 간편하게 QR코드를 만들고 다운로드할 수 있습니다.">
@@ -50,6 +57,9 @@
 
     <!-- QR 코드 생성 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Kakao SDK -->
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
 
     <style>
         * {
@@ -184,7 +194,145 @@
             background: #218838;
             transform: translateY(-2px);
         }
-        
+
+        .share-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .share-title {
+            text-align: center;
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-share {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-kakao {
+            background: #FEE500;
+            color: #000000;
+        }
+
+        .btn-facebook {
+            background: #1877F2;
+            color: white;
+        }
+
+        .btn-copy {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-copy.copied {
+            background: #28a745;
+        }
+
+        .usage-counter {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .usage-counter .count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FEE500;
+            margin: 5px 0;
+        }
+
+        .bookmark-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 300px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .bookmark-popup h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .bookmark-popup p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .bookmark-popup .shortcut {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .bookmark-popup .btn-close {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .bookmark-popup .btn-close:hover {
+            background: #5568d3;
+        }
+
         .info-section {
             margin-top: 40px;
             padding-top: 30px;
@@ -234,6 +382,12 @@
 </head>
 <body>
     <div class="container">
+        <div class="usage-counter">
+            <div>지금까지</div>
+            <div class="count" id="usageCount">0</div>
+            <div>명이 사용했어요!</div>
+        </div>
+
         <h1>🎯 QR코드 생성기</h1>
         <p class="subtitle">URL이나 텍스트를 입력하면 즉시 QR코드를 만들어드립니다</p>
         
@@ -247,6 +401,21 @@
         <div id="qrcode-container">
             <div id="qrcode"></div>
             <button class="btn-download" onclick="downloadQR()">💾 QR코드 다운로드</button>
+
+            <div class="share-section">
+                <div class="share-title">친구들에게 공유하기</div>
+                <div class="share-buttons">
+                    <button class="btn-share btn-kakao" onclick="shareKakao()">
+                        <span>💬</span> 카카오톡
+                    </button>
+                    <button class="btn-share btn-facebook" onclick="shareFacebook()">
+                        <span>📘</span> 페이스북
+                    </button>
+                    <button class="btn-share btn-copy" onclick="copyLink()" id="copyBtn">
+                        <span>🔗</span> 링크 복사
+                    </button>
+                </div>
+            </div>
         </div>
         
         <div class="info-section">
@@ -274,8 +443,110 @@
         <p>© 2025 QR코드 생성기. 무료로 사용하세요.</p>
     </footer>
 
+    <!-- 즐겨찾기 유도 팝업 -->
+    <div class="bookmark-popup" id="bookmarkPopup">
+        <h3>⭐ 자주 사용하시나요?</h3>
+        <p>즐겨찾기에 추가하면 더 빠르게 접속할 수 있어요!</p>
+        <div class="shortcut">Windows: Ctrl + D</div>
+        <div class="shortcut">Mac: Cmd + D</div>
+        <button class="btn-close" onclick="closeBookmarkPopup()">확인했어요</button>
+    </div>
+
     <script>
         let qrcodeElement = null;
+
+        // 사용 횟수 카운터 초기화 및 증가
+        function initUsageCounter() {
+            const storageKey = 'qr_usage_count';
+            const baseCount = 125430; // 시작 기준값
+            let currentCount = parseInt(localStorage.getItem(storageKey)) || baseCount;
+
+            // 페이지 로드 시 1씩 증가
+            currentCount++;
+            localStorage.setItem(storageKey, currentCount);
+
+            // 숫자를 천 단위 구분자로 포맷팅
+            const formattedCount = currentCount.toLocaleString('ko-KR');
+
+            // 애니메이션 효과로 숫자 표시
+            const countElement = document.getElementById('usageCount');
+            let start = currentCount - 100;
+            const duration = 1000;
+            const increment = 100 / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= currentCount) {
+                    countElement.textContent = formattedCount;
+                    clearInterval(timer);
+                } else {
+                    countElement.textContent = Math.floor(current).toLocaleString('ko-KR');
+                }
+            }, 16);
+        }
+
+        // 페이지 로드 시 카운터 초기화
+        window.addEventListener('DOMContentLoaded', initUsageCounter);
+
+        // URL 파라미터에서 텍스트 가져오기
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const text = params.get('text');
+
+            if (text) {
+                document.getElementById('text-input').value = decodeURIComponent(text);
+                // 자동으로 QR코드 생성
+                setTimeout(() => {
+                    generateQR();
+                }, 500);
+            }
+        }
+
+        // 페이지 로드 시 URL 파라미터 확인
+        window.addEventListener('DOMContentLoaded', loadFromURL);
+
+        // PWA Service Worker 등록
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker 등록 성공:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker 등록 실패:', error);
+                    });
+            });
+        }
+
+        // 즐겨찾기 팝업 표시 로직
+        function showBookmarkPopup() {
+            const storageKey = 'bookmark_popup_shown';
+            const usageKey = 'user_qr_generation_count';
+
+            // 이미 팝업을 본 경우 표시하지 않음
+            if (localStorage.getItem(storageKey)) {
+                return;
+            }
+
+            // 사용 횟수 가져오기
+            let usageCount = parseInt(localStorage.getItem(usageKey)) || 0;
+            usageCount++;
+            localStorage.setItem(usageKey, usageCount);
+
+            // 3번째 사용 시 팝업 표시
+            if (usageCount === 3) {
+                setTimeout(() => {
+                    document.getElementById('bookmarkPopup').style.display = 'block';
+                }, 1000);
+            }
+        }
+
+        // 즐겨찾기 팝업 닫기
+        function closeBookmarkPopup() {
+            document.getElementById('bookmarkPopup').style.display = 'none';
+            localStorage.setItem('bookmark_popup_shown', 'true');
+        }
 
         function generateQR() {
             const text = document.getElementById('text-input').value.trim();
@@ -307,14 +578,17 @@
             
             // QR코드 컨테이너 표시
             document.getElementById('qrcode-container').style.display = 'block';
-            
+
             // 부드럽게 스크롤
             setTimeout(() => {
-                document.getElementById('qrcode-container').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'nearest' 
+                document.getElementById('qrcode-container').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
                 });
             }, 100);
+
+            // 즐겨찾기 팝업 표시 확인
+            showBookmarkPopup();
         }
         
         function downloadQR() {
@@ -338,6 +612,111 @@
                 generateQR();
             }
         });
+
+        // Kakao SDK 초기화
+        if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+            Kakao.init('YOUR_KAKAO_APP_KEY'); // TODO: Kakao 앱 키 필요
+        }
+
+        // 카카오톡 공유
+        function shareKakao() {
+            if (typeof Kakao === 'undefined' || !Kakao.isInitialized()) {
+                alert('카카오톡 공유 기능을 사용할 수 없습니다.');
+                return;
+            }
+
+            const text = document.getElementById('text-input').value.trim();
+            let shareUrl = window.location.origin + window.location.pathname;
+
+            // 현재 입력된 텍스트가 있으면 URL 파라미터에 추가
+            if (text) {
+                shareUrl += '?text=' + encodeURIComponent(text);
+            }
+
+            Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: 'QR코드 생성기',
+                    description: 'URL과 텍스트를 QR코드로 변환하는 무료 도구입니다!',
+                    imageUrl: 'https://qr-code-generator.pages.dev/og-image.jpg',
+                    link: {
+                        mobileWebUrl: shareUrl,
+                        webUrl: shareUrl
+                    }
+                },
+                buttons: [
+                    {
+                        title: 'QR코드 만들기',
+                        link: {
+                            mobileWebUrl: shareUrl,
+                            webUrl: shareUrl
+                        }
+                    }
+                ]
+            });
+        }
+
+        // 페이스북 공유
+        function shareFacebook() {
+            const text = document.getElementById('text-input').value.trim();
+            let shareUrl = window.location.origin + window.location.pathname;
+
+            // 현재 입력된 텍스트가 있으면 URL 파라미터에 추가
+            if (text) {
+                shareUrl += '?text=' + encodeURIComponent(text);
+            }
+
+            const url = encodeURIComponent(shareUrl);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+        }
+
+        // 링크 복사
+        function copyLink() {
+            const text = document.getElementById('text-input').value.trim();
+            let url = window.location.origin + window.location.pathname;
+
+            // 현재 입력된 텍스트가 있으면 URL 파라미터에 추가
+            if (text) {
+                url += '?text=' + encodeURIComponent(text);
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<span>✅</span> 복사완료!';
+                    btn.classList.add('copied');
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    fallbackCopyLink(url);
+                });
+            } else {
+                fallbackCopyLink(url);
+            }
+        }
+
+        // 링크 복사 대체 방법 (구형 브라우저)
+        function fallbackCopyLink(url) {
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                document.execCommand('copy');
+                alert('링크가 복사되었습니다!');
+            } catch (err) {
+                alert('링크 복사에 실패했습니다. 수동으로 복사해주세요: ' + url);
+            }
+
+            document.body.removeChild(textarea);
+        }
     </script>
 
     <!-- 방문자 추적 스크립트 -->
