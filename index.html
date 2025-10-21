@@ -58,9 +58,6 @@
     <!-- QR 코드 생성 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- Kakao SDK -->
-    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
-
     <style>
         * {
             margin: 0;
@@ -234,11 +231,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .btn-kakao {
-            background: #FEE500;
-            color: #000000;
-        }
-
         .btn-facebook {
             background: #1877F2;
             color: white;
@@ -405,9 +397,6 @@
             <div class="share-section">
                 <div class="share-title">친구들에게 공유하기</div>
                 <div class="share-buttons">
-                    <button class="btn-share btn-kakao" onclick="shareKakao()">
-                        <span>💬</span> 카카오톡
-                    </button>
                     <button class="btn-share btn-facebook" onclick="shareFacebook()">
                         <span>📘</span> 페이스북
                     </button>
@@ -612,49 +601,6 @@
                 generateQR();
             }
         });
-
-        // Kakao SDK 초기화
-        if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
-            Kakao.init('YOUR_KAKAO_APP_KEY'); // TODO: Kakao 앱 키 필요
-        }
-
-        // 카카오톡 공유
-        function shareKakao() {
-            if (typeof Kakao === 'undefined' || !Kakao.isInitialized()) {
-                alert('카카오톡 공유 기능을 사용할 수 없습니다.');
-                return;
-            }
-
-            const text = document.getElementById('text-input').value.trim();
-            let shareUrl = window.location.origin + window.location.pathname;
-
-            // 현재 입력된 텍스트가 있으면 URL 파라미터에 추가
-            if (text) {
-                shareUrl += '?text=' + encodeURIComponent(text);
-            }
-
-            Kakao.Share.sendDefault({
-                objectType: 'feed',
-                content: {
-                    title: 'QR코드 생성기',
-                    description: 'URL과 텍스트를 QR코드로 변환하는 무료 도구입니다!',
-                    imageUrl: 'https://qr-code-generator.pages.dev/og-image.jpg',
-                    link: {
-                        mobileWebUrl: shareUrl,
-                        webUrl: shareUrl
-                    }
-                },
-                buttons: [
-                    {
-                        title: 'QR코드 만들기',
-                        link: {
-                            mobileWebUrl: shareUrl,
-                            webUrl: shareUrl
-                        }
-                    }
-                ]
-            });
-        }
 
         // 페이스북 공유
         function shareFacebook() {
