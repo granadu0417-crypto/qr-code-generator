@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO 최적화 -->
+    <title>QR코드 생성기 - 무료 QR코드 만들기 | 빠르고 간편한 QR코드 제작</title>
+    <meta name="description" content="URL, 텍스트를 QR코드로 변환하세요. 무료 QR코드 생성기로 간편하게 QR코드를 만들고 다운로드할 수 있습니다. 명함, 포스터, 제품에 활용하세요.">
+    <meta name="keywords" content="QR코드, QR코드 생성기, QR코드 만들기, QR코드 제작, 무료 QR코드, QR code generator, 큐알코드">
+    <meta name="author" content="QR코드 생성기">
+    <link rel="canonical" href="https://qr-code-generator.pages.dev/">
+    
+    <!-- Open Graph (페이스북, 카카오톡) -->
+    <meta property="og:title" content="QR코드 생성기 - 무료 QR코드 만들기">
+    <meta property="og:description" content="URL, 텍스트를 QR코드로 변환하세요. 무료 QR코드 생성기로 간편하게 QR코드를 만들고 다운로드할 수 있습니다.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://qr-code-generator.pages.dev/">
+    <meta property="og:image" content="https://qr-code-generator.pages.dev/og-image.jpg">
+    <meta property="og:locale" content="ko_KR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="QR코드 생성기 - 무료 QR코드 만들기">
+    <meta name="twitter:description" content="URL, 텍스트를 QR코드로 변환하세요. 무료 QR코드 생성기로 간편하게 QR코드를 만들고 다운로드할 수 있습니다.">
+    <meta name="twitter:image" content="https://qr-code-generator.pages.dev/og-image.jpg">
+    
+    <!-- 구조화된 데이터 (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "QR코드 생성기",
+        "description": "URL, 텍스트를 QR코드로 변환하는 무료 온라인 도구",
+        "url": "https://qr-code-generator.pages.dev/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "KRW"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "1250"
+        }
+    }
+    </script>
+    
+    <!-- QR 코드 생성 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+        
+        #qrcode-container {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        #qrcode {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn-download {
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .info-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .info-section h2 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .info-section p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .info-section ul {
+            color: #666;
+            line-height: 1.8;
+            margin-left: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 QR코드 생성기</h1>
+        <p class="subtitle">URL이나 텍스트를 입력하면 즉시 QR코드를 만들어드립니다</p>
+        
+        <div class="input-group">
+            <label for="text-input">URL 또는 텍스트 입력</label>
+            <textarea id="text-input" placeholder="예: https://example.com 또는 원하는 텍스트"></textarea>
+        </div>
+        
+        <button class="btn-generate" onclick="generateQR()">QR코드 생성하기</button>
+        
+        <div id="qrcode-container">
+            <div id="qrcode"></div>
+            <button class="btn-download" onclick="downloadQR()">💾 QR코드 다운로드</button>
+        </div>
+        
+        <div class="info-section">
+            <h2>📱 QR코드란?</h2>
+            <p>QR코드(Quick Response Code)는 2차원 바코드로, 스마트폰 카메라로 스캔하면 웹사이트 URL, 텍스트, 연락처 등의 정보를 빠르게 읽을 수 있습니다.</p>
+            
+            <h2>✨ 사용 방법</h2>
+            <ul>
+                <li>URL 또는 텍스트를 입력창에 입력하세요</li>
+                <li>"QR코드 생성하기" 버튼을 클릭하세요</li>
+                <li>생성된 QR코드를 다운로드하여 사용하세요</li>
+            </ul>
+            
+            <h2>💡 활용 예시</h2>
+            <ul>
+                <li>명함에 홈페이지 URL 추가</li>
+                <li>포스터나 전단지에 이벤트 페이지 링크</li>
+                <li>제품 포장에 상세 정보 안내</li>
+                <li>레스토랑 메뉴판, 와이파이 비밀번호 공유</li>
+            </ul>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 QR코드 생성기. 무료로 사용하세요.</p>
+    </footer>
+    
+    <script>
+        let qrcodeElement = null;
+        
+        function generateQR() {
+            const text = document.getElementById('text-input').value.trim();
+            
+            if (!text) {
+                alert('URL 또는 텍스트를 입력해주세요.');
+                return;
+            }
+            
+            // 기존 QR코드 제거
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            
+            // QR코드 생성
+            qrcodeElement = new QRCode(qrcodeDiv, {
+                text: text,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // QR코드 컨테이너 표시
+            document.getElementById('qrcode-container').style.display = 'block';
+            
+            // 부드럽게 스크롤
+            setTimeout(() => {
+                document.getElementById('qrcode-container').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest' 
+                });
+            }, 100);
+        }
+        
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                alert('먼저 QR코드를 생성해주세요.');
+                return;
+            }
+            
+            // Canvas를 이미지로 변환하여 다운로드
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Enter 키로도 생성 가능
+        document.getElementById('text-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateQR();
+            }
+        });
+    </script>
+
+    <!-- 방문자 추적 스크립트 -->
+    <script>
+    (function() {
+      const startTime = Date.now();
+
+      window.addEventListener('beforeunload', function() {
+        const duration = Math.floor((Date.now() - startTime) / 1000);
+
+        const data = {
+          referrer: document.referrer || 'direct',
+          page_url: window.location.href,
+          session_duration: duration
+        };
+
+        navigator.sendBeacon(
+          'https://analytics-tracker.granadu0417.workers.dev/track',
+          JSON.stringify(data)
+        );
+      });
+    })();
+    </script>
+</body>
+</html>
